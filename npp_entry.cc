@@ -58,39 +58,39 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
 }
 
 NPError NPP_New(NPMIMEType pluginType, NPP instance,
-                uint16_t mode, int16_t argc, char* argn[],
-                char* argv[], NPSavedData* saved) {
-  MY_LOG("");
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+	uint16_t mode, int16_t argc, char* argn[],
+	char* argv[], NPSavedData* saved) {
+		MY_LOG("");
+		if(instance == NULL)
+			return NPERR_INVALID_INSTANCE_ERROR;
 
 #ifdef _WINDOWS
-  int bWindowed = 1;
+		int bWindowed = 1;
 #else
-  int bWindowed = 0;
+		int bWindowed = 0;
 #endif
-  npnfuncs->setvalue(instance, NPPVpluginWindowBool, (void *)bWindowed);
+		npnfuncs->setvalue(instance, NPPVpluginWindowBool, (void *)bWindowed);
 
-  CPlugin * pPlugin = new CPlugin(instance);
-  if(pPlugin == NULL)
-    return NPERR_OUT_OF_MEMORY_ERROR;
+		CPlugin * pPlugin = new CPlugin(instance);
+		if(pPlugin == NULL)
+			return NPERR_OUT_OF_MEMORY_ERROR;
 
-  instance->pdata = (void *)pPlugin;
+		instance->pdata = (void *)pPlugin;
 
-  return NPERR_NO_ERROR;
+		return NPERR_NO_ERROR;
 }
 
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 	MY_LOG("");
 	if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+		return NPERR_INVALID_INSTANCE_ERROR;
 
-  CPlugin * pPlugin = (CPlugin *)instance->pdata;
-  if(pPlugin != NULL){
-	  pPlugin->shut();
-    delete pPlugin;
-  }
-  return NPERR_NO_ERROR;
+	CPlugin * pPlugin = (CPlugin *)instance->pdata;
+	if(pPlugin != NULL){
+		pPlugin->shut();
+		delete pPlugin;
+	}
+	return NPERR_NO_ERROR;
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
