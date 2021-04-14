@@ -94,6 +94,7 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
+    MY_LOG("");
   if(instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
@@ -103,6 +104,8 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   CPlugin * pPlugin = (CPlugin *)instance->pdata;
   if(pPlugin == NULL) 
     return NPERR_GENERIC_ERROR;
+
+  MY_LOG("window->window = %p", window->window);
 
   // window just created
   if(!pPlugin->isInitialized() && (window->window != NULL)) { 
