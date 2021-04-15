@@ -168,6 +168,10 @@ NPBool CPlugin::init(NPWindow* pNPWindow) {
         m_hWnd,
         NULL, (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE), NULL);
 
+    //
+    //RECT rc = { 0 };
+    //GetWindowRect(m_hWnd, &rc);
+    //SetWindowPos(m_hWnd, NULL, rc.left, rc.top, rc.right - rc.left - 50, rc.bottom - rc.top - 50, SWP_NOMOVE | SWP_NOZORDER);
 #endif
     m_Window = pNPWindow;
     m_bInitialized = true;

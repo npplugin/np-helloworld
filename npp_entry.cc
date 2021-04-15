@@ -15,7 +15,7 @@
 * Contributor(s):
 *
 * Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or 
+* either the GNU General Public License Version 2 or later (the "GPL"), or
 * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
 * in which case the provisions of the GPL or the LGPL are applicable instead
 * of those above. If you wish to allow use of your version of this file only
@@ -32,104 +32,104 @@
 #include "mylog.h"
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
-  switch(variable) {
-  default:
-    return NPERR_GENERIC_ERROR;
-  case NPPVpluginNameString:
-    *((char **)value) = "ScreenCapturePlugin";
-    break;
-  case NPPVpluginDescriptionString:
-    *((char **)value) = "ScreenCapturePlugin plugin.";
-    break;
-  case NPPVpluginScriptableNPObject: {
-      if(instance == NULL)
-        return NPERR_INVALID_INSTANCE_ERROR;
-      CPlugin * pPlugin = (CPlugin *)instance->pdata;
-      if(pPlugin == NULL)
+    MY_LOG("");
+    switch (variable) {
+    default:
         return NPERR_GENERIC_ERROR;
-      *(NPObject **)value = (NPObject*)pPlugin->GetScriptableObject();
+    case NPPVpluginNameString:
+        *((char**)value) = "ScreenCapturePlugin";
+        break;
+    case NPPVpluginDescriptionString:
+        *((char**)value) = "ScreenCapturePlugin plugin.";
+        break;
+    case NPPVpluginScriptableNPObject: {
+        if (instance == NULL)
+            return NPERR_INVALID_INSTANCE_ERROR;
+        CPlugin* pPlugin = (CPlugin*)instance->pdata;
+        if (pPlugin == NULL)
+            return NPERR_GENERIC_ERROR;
+        *(NPObject**)value = (NPObject*)pPlugin->GetScriptableObject();
     }
-    break;
-  case NPPVpluginNeedsXEmbed:
-    *((char *)value) = 1;
-    break;
-  }
-  return NPERR_NO_ERROR;
+                                     break;
+    case NPPVpluginNeedsXEmbed:
+        *((char*)value) = 1;
+        break;
+    }
+    return NPERR_NO_ERROR;
 }
 
-NPError NPP_New(NPMIMEType pluginType, NPP instance,
-	uint16_t mode, int16_t argc, char* argn[],
-	char* argv[], NPSavedData* saved) {
-		MY_LOG("");
-		if(instance == NULL)
-			return NPERR_INVALID_INSTANCE_ERROR;
+NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, char* argn[], char* argv[], NPSavedData* saved) {
+    MY_LOG("");
+    if (instance == NULL)
+        return NPERR_INVALID_INSTANCE_ERROR;
 
 #ifdef _WINDOWS
-		int bWindowed = 1;
+    int bWindowed = 1;
 #else
-		int bWindowed = 0;
+    int bWindowed = 0;
 #endif
-		npnfuncs->setvalue(instance, NPPVpluginWindowBool, (void *)bWindowed);
+    npnfuncs->setvalue(instance, NPPVpluginWindowBool, (void*)bWindowed);
 
-		CPlugin * pPlugin = new CPlugin(instance);
-		if(pPlugin == NULL)
-			return NPERR_OUT_OF_MEMORY_ERROR;
+    CPlugin* pPlugin = new CPlugin(instance);
+    if (pPlugin == NULL)
+        return NPERR_OUT_OF_MEMORY_ERROR;
 
-		instance->pdata = (void *)pPlugin;
+    instance->pdata = (void*)pPlugin;
 
-		return NPERR_NO_ERROR;
+    return NPERR_NO_ERROR;
 }
 
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
-	MY_LOG("");
-	if(instance == NULL)
-		return NPERR_INVALID_INSTANCE_ERROR;
+    MY_LOG("");
+    if (instance == NULL)
+        return NPERR_INVALID_INSTANCE_ERROR;
 
-	CPlugin * pPlugin = (CPlugin *)instance->pdata;
-	if(pPlugin != NULL){
-		pPlugin->shut();
-		delete pPlugin;
-	}
-	return NPERR_NO_ERROR;
+    CPlugin* pPlugin = (CPlugin*)instance->pdata;
+    if (pPlugin != NULL) {
+        pPlugin->shut();
+        delete pPlugin;
+    }
+    return NPERR_NO_ERROR;
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
     MY_LOG("");
-  if(instance == NULL)
-    return NPERR_INVALID_INSTANCE_ERROR;
+    if (instance == NULL)
+        return NPERR_INVALID_INSTANCE_ERROR;
 
-  if(window == NULL)
-    return NPERR_GENERIC_ERROR;
+    if (window == NULL)
+        return NPERR_GENERIC_ERROR;
 
-  CPlugin * pPlugin = (CPlugin *)instance->pdata;
-  if(pPlugin == NULL) 
-    return NPERR_GENERIC_ERROR;
+    CPlugin* pPlugin = (CPlugin*)instance->pdata;
+    if (pPlugin == NULL)
+        return NPERR_GENERIC_ERROR;
 
-  MY_LOG("window->window = %p", window->window);
+    MY_LOG("window->window = %p", window->window);
 
-  // window just created
-  if(!pPlugin->isInitialized() && (window->window != NULL)) { 
-    if(!pPlugin->init(window)) {
-      delete pPlugin;
-      pPlugin = NULL;
-      return NPERR_MODULE_LOAD_FAILED_ERROR;
+    // window just created
+    if (!pPlugin->isInitialized() && (window->window != NULL)) {
+        if (!pPlugin->init(window)) {
+            delete pPlugin;
+            pPlugin = NULL;
+            return NPERR_MODULE_LOAD_FAILED_ERROR;
+        }
     }
-  }
 
-  return NPERR_NO_ERROR;
+    return NPERR_NO_ERROR;
 }
 
-NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
-                      NPBool seekable, uint16_t* stype) {
-
-  return NPERR_GENERIC_ERROR;
+NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream* stream, NPBool seekable, uint16_t* stype) {
+    MY_LOG("");
+    return NPERR_GENERIC_ERROR;
 }
 
 NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason) {
-  return NPERR_GENERIC_ERROR;
+    MY_LOG("");
+    return NPERR_GENERIC_ERROR;
 }
 
 int16_t NPP_HandleEvent(NPP instance, void* event) {
-  return 0;
+    MY_LOG("");
+    return 0;
 }
 
