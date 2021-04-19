@@ -27,9 +27,9 @@
 * the terms of any one of the NPL, the GPL or the LGPL.
 * ***** END LICENSE BLOCK ***** */
 
-#include <stdio.h>
-#include "plugin.h"
+//#include <stdio.h>
 #include "mylog.h"
+#include "plugin.h"
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
     MY_LOG("");

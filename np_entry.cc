@@ -41,11 +41,6 @@
 //
 //#include <stdio.h>
 
-#include "mylog.h"
-
-#include "npapi.h"
-#include "npfunctions.h"
-
 #ifdef _WINDOWS
 #include <windows.h>
 #include <GdiPlus.h>
@@ -53,6 +48,10 @@ using namespace Gdiplus;
 ULONG_PTR token;
 #pragma comment(lib,"gdiplus.lib")
 #endif
+
+#include "mylog.h"
+#include "npapi.h"
+#include "npfunctions.h"
 
 NPNetscapeFuncs* npnfuncs = NULL;
 
