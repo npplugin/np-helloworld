@@ -130,6 +130,22 @@ bool ScriptablePluginObject::GetProperty(NPObject* obj, NPIdentifier propertyNam
 #ifdef XP_WIN
 static LRESULT CALLBACK PluginWinProc(HWND, UINT, WPARAM, LPARAM);
 static WNDPROC lpOldProc = NULL;
+
+//HWND FindBrowserHWND(HWND hWnd) {
+//    DWORD curTid = GetWindowThreadProcessId(hWnd, NULL);
+//    DWORD browserTid = curTid;
+//    HWND hBrowser = hWnd;
+//
+//    while (browserTid == curTid) {
+//        hBrowser = GetParent(hBrowser);
+//        browserTid = GetWindowThreadProcessId(hBrowser, NULL);
+//        if (!hBrowser) {
+//            break;
+//        }
+//    }
+//    hBrowser = GetParent(hBrowser);
+//    return hBrowser;
+//}
 #endif
 
 CPlugin::CPlugin(NPP pNPInstance) :
@@ -168,10 +184,9 @@ NPBool CPlugin::init(NPWindow* pNPWindow) {
         m_hWnd,
         NULL, (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE), NULL);
 
-    //
-    //RECT rc = { 0 };
-    //GetWindowRect(m_hWnd, &rc);
-    //SetWindowPos(m_hWnd, NULL, rc.left, rc.top, rc.right - rc.left - 50, rc.bottom - rc.top - 50, SWP_NOMOVE | SWP_NOZORDER);
+//    HWND hBrowser = FindBrowserHWND(m_hWnd);
+//    AttachThreadInput(GetWindowThreadProcessId(m_hWnd, NULL), GetWindowThreadProcessId(hBrowser, NULL), TRUE);
+
 #endif
     m_Window = pNPWindow;
     m_bInitialized = true;
