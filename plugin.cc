@@ -42,12 +42,9 @@
 
 #include <string.h>
 #include "plugin.h"
-
-#ifdef XP_WIN
 #include <windows.h>
 #include <stdio.h>
 #include <windowsx.h>
-#endif
 
 #include "mylog.h"
 
@@ -127,49 +124,28 @@ bool ScriptablePluginObject::GetProperty(NPObject* obj, NPIdentifier propertyNam
     return false;
 }
 
-#ifdef XP_WIN
 static LRESULT CALLBACK PluginWinProc(HWND, UINT, WPARAM, LPARAM);
 static WNDPROC lpOldProc = NULL;
-
-//HWND FindBrowserHWND(HWND hWnd) {
-//    DWORD curTid = GetWindowThreadProcessId(hWnd, NULL);
-//    DWORD browserTid = curTid;
-//    HWND hBrowser = hWnd;
-//
-//    while (browserTid == curTid) {
-//        hBrowser = GetParent(hBrowser);
-//        browserTid = GetWindowThreadProcessId(hBrowser, NULL);
-//        if (!hBrowser) {
-//            break;
-//        }
-//    }
-//    hBrowser = GetParent(hBrowser);
-//    return hBrowser;
-//}
-#endif
 
 CPlugin::CPlugin(NPP pNPInstance) :
     m_pNPInstance(pNPInstance),
     m_bInitialized(false),
     m_pScriptableObject(NULL) {
-#ifdef _WINDOWS
     m_hWnd = NULL;
-#endif
 }
 
 CPlugin::~CPlugin() {
     if (m_pScriptableObject)
         npnfuncs->releaseobject((NPObject*)m_pScriptableObject);
-#ifdef _WINDOWS
+
     m_hWnd = NULL;
-#endif
     m_bInitialized = false;
 }
 
 NPBool CPlugin::init(NPWindow* pNPWindow) {
     if (pNPWindow == NULL)
         return false;
-#ifdef _WINDOWS
+
     m_hWnd = (HWND)pNPWindow->window;
     if (m_hWnd == NULL)
         return false;
@@ -183,11 +159,6 @@ NPBool CPlugin::init(NPWindow* pNPWindow) {
         10, 10, 200, 100,
         m_hWnd,
         NULL, (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE), NULL);
-
-//    HWND hBrowser = FindBrowserHWND(m_hWnd);
-//    AttachThreadInput(GetWindowThreadProcessId(m_hWnd, NULL), GetWindowThreadProcessId(hBrowser, NULL), TRUE);
-
-#endif
     m_Window = pNPWindow;
     m_bInitialized = true;
     return true;
@@ -195,12 +166,8 @@ NPBool CPlugin::init(NPWindow* pNPWindow) {
 
 void CPlugin::shut()
 {
-#ifdef XP_WIN
-    // subclass it back
     SubclassWindow(m_hWnd, lpOldProc);
     m_hWnd = NULL;
-#endif
-
     m_bInitialized = false;
 }
 
@@ -220,13 +187,10 @@ ScriptablePluginObject* CPlugin::GetScriptableObject() {
     return m_pScriptableObject;
 }
 
-#ifdef _WINDOWS
 HWND CPlugin::GetHWnd() {
     return m_hWnd;
 }
-#endif
 
-#ifdef XP_WIN
 static LRESULT CALLBACK PluginWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
@@ -248,13 +212,9 @@ static LRESULT CALLBACK PluginWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
         EndPaint(hWnd, &ps);
     }
     break;
-    //case WM_LBUTTONDOWN:
-    //    SetFocus(hWnd);
-    //    break;
     default:
         break;
     }
 
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
-#endif
