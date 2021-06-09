@@ -147,6 +147,7 @@ CPlugin::CPlugin(NPP pNPInstance) :
     m_bInitialized(false),
     m_pScriptableObject(NULL) {
     m_hWnd = NULL;
+  m_hdc = NULL;
 }
 
 CPlugin::~CPlugin() {
@@ -161,19 +162,28 @@ NPBool CPlugin::init(NPWindow* pNPWindow) {
     if (pNPWindow == NULL)
         return false;
 
-    m_hWnd = (HWND)pNPWindow->window;
-    if (m_hWnd == NULL)
+    if (pNPWindow->type == NPWindowTypeWindow) {
+      m_hWnd = (HWND)pNPWindow->window;
+      if (m_hWnd == NULL)
         return false;
 
-    // subclass window so we can intercept window messages and do our drawing to it
-    lpOldProc = SubclassWindow(m_hWnd, (WNDPROC)PluginWinProc);
-    SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
+      // subclass window so we can intercept window messages and do our drawing
+      // to it
+      lpOldProc = SubclassWindow(m_hWnd, (WNDPROC)PluginWinProc);
+      SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
-    CreateWindowExA(WS_EX_CLIENTEDGE, "EDIT", "hello, win32",
-        WS_VISIBLE | WS_CHILD | WS_BORDER | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
-        10, 10, 200, 100,
-        m_hWnd,
-        NULL, (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE), NULL);
+      CreateWindowExA(WS_EX_CLIENTEDGE, "EDIT", "hello, win32.",
+                      WS_VISIBLE | WS_CHILD | WS_BORDER | ES_LEFT |
+                          ES_MULTILINE | ES_AUTOVSCROLL,
+                      10, 10, 200, 100, m_hWnd, NULL,
+                      (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE), NULL);
+    } else {
+      m_hdc = (HDC)pNPWindow->window;
+      m_rc.left = pNPWindow->x;
+      m_rc.top = pNPWindow->y;
+      m_rc.right = pNPWindow->x + pNPWindow->width;
+      m_rc.bottom = pNPWindow->y + pNPWindow->height;
+    }
 
 //    HWND hBrowser = FindBrowserHWND(m_hWnd);
 //    AttachThreadInput(GetWindowThreadProcessId(m_hWnd, NULL), GetWindowThreadProcessId(hBrowser, NULL), TRUE);
@@ -208,6 +218,11 @@ ScriptablePluginObject* CPlugin::GetScriptableObject() {
 
 HWND CPlugin::GetHWnd() {
     return m_hWnd;
+}
+
+HDC CPlugin::GetHDC(RECT* rc) {
+  *rc = m_rc;
+  return m_hdc;
 }
 
 static LRESULT CALLBACK PluginWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

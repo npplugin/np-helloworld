@@ -68,7 +68,9 @@ private:
   NPWindow * m_Window;
   NPBool m_bInitialized;
   ScriptablePluginObject *m_pScriptableObject;
-  HWND m_hWnd; 
+  HWND m_hWnd;
+  HDC m_hdc;
+  RECT m_rc;
 
 public:
   CPlugin(NPP pNPInstance);
@@ -78,7 +80,8 @@ public:
   void shut();
   NPBool isInitialized();
   ScriptablePluginObject *GetScriptableObject();
-  HWND GetHWnd(); 
+  HWND GetHWnd();
+  HDC GetHDC(RECT*);
 };
 
 #endif // __PLUGIN_H__

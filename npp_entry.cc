@@ -104,16 +104,16 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
     if (pPlugin == NULL)
         return NPERR_GENERIC_ERROR;
 
-    MY_LOG("window->window = %p", window->window);
+    MY_LOG("window->window = %p, %d", window->window, window->type);
 
     // window just created
-    if (!pPlugin->isInitialized() && (window->window != NULL)) {
+      if (!pPlugin->isInitialized() && (window->window != NULL)) {
         if (!pPlugin->init(window)) {
-            delete pPlugin;
-            pPlugin = NULL;
-            return NPERR_MODULE_LOAD_FAILED_ERROR;
+          delete pPlugin;
+          pPlugin = NULL;
+          return NPERR_MODULE_LOAD_FAILED_ERROR;
         }
-    }
+      }
 
     return NPERR_NO_ERROR;
 }
@@ -128,8 +128,34 @@ NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason) {
     return NPERR_GENERIC_ERROR;
 }
 
-int16_t NPP_HandleEvent(NPP instance, void* event) {
-    MY_LOG("");
-    return 0;
-}
+int16_t NPP_HandleEvent(NPP instance, void* e) {
+  NPEvent* event = (NPEvent*)e;
+  MY_LOG("event:0x%x, 0x%x, 0x%x", event->event, event->lParam, event->wParam);
 
+  switch (event->event) {
+    case WM_PAINT: {
+      CPlugin* pPlugin = (CPlugin*)instance->pdata;
+      RECT rc;
+      HDC hdc = pPlugin->GetHDC(&rc);
+
+      FillRect(hdc, &rc, (HBRUSH)(COLOR_GRAYTEXT + 1));
+      RECT r = rc;
+      r.left += 10;
+      r.top += 10;
+      r.right -= 10;
+      r.bottom -= 10;
+      FillRect(hdc, &r, (HBRUSH)(COLOR_WINDOW + 1));
+
+      //FrameRect(hdc, &rc, (HBRUSH)(COLOR_WINDOWFRAME + 1));
+
+      SetTextColor(hdc, RGB(255, 0, 0));
+
+      DrawText(hdc, TEXT("I am the np plugin."), -1, &rc,
+               DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    } break;
+    default:
+      break;
+  }
+
+  return 0;
+}
