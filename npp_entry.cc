@@ -65,6 +65,14 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
 
 #ifdef _WINDOWS
     int bWindowed = 1;
+
+    // support windowless
+    for (int i = 0; i < argc; i++) {
+      if (strcmp(argn[i], "windowless") == 0 && strcmp(argv[i], "1") == 0) {
+        bWindowed = 0;
+        break;
+      }
+    }
 #else
     int bWindowed = 0;
 #endif
@@ -138,19 +146,21 @@ int16_t NPP_HandleEvent(NPP instance, void* e) {
       RECT rc;
       HDC hdc = pPlugin->GetHDC(&rc);
 
-      FillRect(hdc, &rc, (HBRUSH)(COLOR_GRAYTEXT + 1));
-      RECT r = rc;
-      r.left += 10;
-      r.top += 10;
-      r.right -= 10;
-      r.bottom -= 10;
-      FillRect(hdc, &r, (HBRUSH)(COLOR_WINDOW + 1));
 
-      //FrameRect(hdc, &rc, (HBRUSH)(COLOR_WINDOWFRAME + 1));
+      HBRUSH hbrush = CreateSolidBrush(RGB(0, 0, 255));
+      FillRect(hdc, &rc, hbrush);
+      DeleteObject(hbrush);
+
+      RECT r = rc;
+      r.left += 20;
+      r.top += 20;
+      r.right -= 20;
+      r.bottom -= 20;
+      FillRect(hdc, &r, (HBRUSH)(COLOR_WINDOW + 1));
 
       SetTextColor(hdc, RGB(255, 0, 0));
 
-      DrawText(hdc, TEXT("I am the np plugin."), -1, &rc,
+      DrawText(hdc, TEXT("hello, np plugin win32"), -1, &rc,
                DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     } break;
     default:
