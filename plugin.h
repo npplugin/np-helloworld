@@ -71,6 +71,7 @@ private:
   HWND m_hWnd;
   HDC m_hdc;
   RECT m_rc;
+  bool m_windowed;
 
 public:
   CPlugin(NPP pNPInstance);
@@ -81,7 +82,8 @@ public:
   NPBool isInitialized();
   ScriptablePluginObject *GetScriptableObject();
   HWND GetHWnd();
-  HDC GetHDC(RECT*);
+  void Draw();
+  void DoPaint(HDC hdc, RECT* rc);
 };
 
 #endif // __PLUGIN_H__

@@ -141,28 +141,9 @@ int16_t NPP_HandleEvent(NPP instance, void* e) {
   MY_LOG("event:0x%x, 0x%x, 0x%x", event->event, event->lParam, event->wParam);
 
   switch (event->event) {
-    case WM_PAINT: {
-      CPlugin* pPlugin = (CPlugin*)instance->pdata;
-      RECT rc;
-      HDC hdc = pPlugin->GetHDC(&rc);
-
-
-      HBRUSH hbrush = CreateSolidBrush(RGB(0, 0, 255));
-      FillRect(hdc, &rc, hbrush);
-      DeleteObject(hbrush);
-
-      RECT r = rc;
-      r.left += 20;
-      r.top += 20;
-      r.right -= 20;
-      r.bottom -= 20;
-      FillRect(hdc, &r, (HBRUSH)(COLOR_WINDOW + 1));
-
-      SetTextColor(hdc, RGB(255, 0, 0));
-
-      DrawText(hdc, TEXT("hello, np plugin win32"), -1, &rc,
-               DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    } break;
+    case WM_PAINT:
+      ((CPlugin*)instance->pdata)->Draw();
+      break;
     default:
       break;
   }

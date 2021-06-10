@@ -35,14 +35,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
- //////////////////////////////////////////////////
- //
- // CPlugin class implementation
- //
+//////////////////////////////////////////////////
+//
+// CPlugin class implementation
+//
 
-#include <windows.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+#include <windows.h>
 #include <windowsx.h>
 
 #include "mylog.h"
@@ -51,83 +51,86 @@
 const char* kSayHello = "sayHello";
 
 static NPClass plugin_ref_obj = {
-  NP_CLASS_STRUCT_VERSION,
-  ScriptablePluginObject::Allocate,
-  ScriptablePluginObject::Deallocate,
-  NULL,
-  ScriptablePluginObject::HasMethod,
-  ScriptablePluginObject::Invoke,
-  ScriptablePluginObject::InvokeDefault,
-  ScriptablePluginObject::HasProperty,
-  ScriptablePluginObject::GetProperty,
-  NULL,
-  NULL,
+    NP_CLASS_STRUCT_VERSION,
+    ScriptablePluginObject::Allocate,
+    ScriptablePluginObject::Deallocate,
+    NULL,
+    ScriptablePluginObject::HasMethod,
+    ScriptablePluginObject::Invoke,
+    ScriptablePluginObject::InvokeDefault,
+    ScriptablePluginObject::HasProperty,
+    ScriptablePluginObject::GetProperty,
+    NULL,
+    NULL,
 };
 
-ScriptablePluginObject::ScriptablePluginObject(NPP instance)
-    : npp(instance) {
-}
+ScriptablePluginObject::ScriptablePluginObject(NPP instance) : npp(instance) {}
 
 NPObject* ScriptablePluginObject::Allocate(NPP instance, NPClass* npclass) {
-    return (NPObject*)(new ScriptablePluginObject(instance));
+  return (NPObject*)(new ScriptablePluginObject(instance));
 }
 
 void ScriptablePluginObject::Deallocate(NPObject* obj) {
-    delete (ScriptablePluginObject*)obj;
+  delete (ScriptablePluginObject*)obj;
 }
 
 bool ScriptablePluginObject::HasMethod(NPObject* obj, NPIdentifier methodName) {
-    return true;
+  return true;
 }
 
-bool ScriptablePluginObject::InvokeDefault(NPObject* obj, const NPVariant* args,
-    uint32_t argCount, NPVariant* result) {
-    return true;
+bool ScriptablePluginObject::InvokeDefault(NPObject* obj,
+                                           const NPVariant* args,
+                                           uint32_t argCount,
+                                           NPVariant* result) {
+  return true;
 }
 
-bool ScriptablePluginObject::Invoke(NPObject* obj, NPIdentifier methodName,
-    const NPVariant* args, uint32_t argCount,
-    NPVariant* result) {
-    ScriptablePluginObject* thisObj = (ScriptablePluginObject*)obj;
-    char* name = npnfuncs->utf8fromidentifier(methodName);
-    bool ret_val = false;
-    if (!name) {
-        return ret_val;
-    }
-
-    MY_LOG(name);
-
-    if (!strcmp(name, kSayHello)) {
-        ret_val = true;
-        //TODO
-        const char* outString = "hello world!\ncall from my plugin";
-        char* npOutString = (char*)npnfuncs->memalloc(strlen(outString) + 1);
-        if (!npOutString)
-            return false;
-        strcpy(npOutString, outString);
-        STRINGZ_TO_NPVARIANT(npOutString, *result);
-    }
-    else {
-        // Exception handling. 
-        npnfuncs->setexception(obj, "Unknown method");
-    }
-    npnfuncs->memfree(name);
+bool ScriptablePluginObject::Invoke(NPObject* obj,
+                                    NPIdentifier methodName,
+                                    const NPVariant* args,
+                                    uint32_t argCount,
+                                    NPVariant* result) {
+  ScriptablePluginObject* thisObj = (ScriptablePluginObject*)obj;
+  char* name = npnfuncs->utf8fromidentifier(methodName);
+  bool ret_val = false;
+  if (!name) {
     return ret_val;
+  }
+
+  MY_LOG(name);
+
+  if (!strcmp(name, kSayHello)) {
+    ret_val = true;
+    // TODO
+    const char* outString = "hello world!\ncall from my plugin";
+    char* npOutString = (char*)npnfuncs->memalloc(strlen(outString) + 1);
+    if (!npOutString)
+      return false;
+    strcpy(npOutString, outString);
+    STRINGZ_TO_NPVARIANT(npOutString, *result);
+  } else {
+    // Exception handling.
+    npnfuncs->setexception(obj, "Unknown method");
+  }
+  npnfuncs->memfree(name);
+  return ret_val;
 }
 
-bool ScriptablePluginObject::HasProperty(NPObject* obj, NPIdentifier propertyName) {
-    return false;
+bool ScriptablePluginObject::HasProperty(NPObject* obj,
+                                         NPIdentifier propertyName) {
+  return false;
 }
 
-bool ScriptablePluginObject::GetProperty(NPObject* obj, NPIdentifier propertyName,
-    NPVariant* result) {
-    return false;
+bool ScriptablePluginObject::GetProperty(NPObject* obj,
+                                         NPIdentifier propertyName,
+                                         NPVariant* result) {
+  return false;
 }
 
 static LRESULT CALLBACK PluginWinProc(HWND, UINT, WPARAM, LPARAM);
 static WNDPROC lpOldProc = NULL;
 
-//HWND FindBrowserHWND(HWND hWnd) {
+// HWND FindBrowserHWND(HWND hWnd) {
 //    DWORD curTid = GetWindowThreadProcessId(hWnd, NULL);
 //    DWORD browserTid = curTid;
 //    HWND hBrowser = hWnd;
@@ -142,113 +145,136 @@ static WNDPROC lpOldProc = NULL;
 //    hBrowser = GetParent(hBrowser);
 //    return hBrowser;
 //}
-CPlugin::CPlugin(NPP pNPInstance) :
-    m_pNPInstance(pNPInstance),
-    m_bInitialized(false),
-    m_pScriptableObject(NULL) {
-    m_hWnd = NULL;
-  m_hdc = NULL;
-}
+
+CPlugin::CPlugin(NPP pNPInstance)
+    : m_pNPInstance(pNPInstance),
+      m_bInitialized(false),
+      m_pScriptableObject(NULL),
+      m_hWnd(NULL),
+      m_hdc(NULL),
+      m_windowed(true) {}
 
 CPlugin::~CPlugin() {
-    if (m_pScriptableObject)
-        npnfuncs->releaseobject((NPObject*)m_pScriptableObject);
+  if (m_pScriptableObject)
+    npnfuncs->releaseobject((NPObject*)m_pScriptableObject);
 
-    m_hWnd = NULL;
-    m_bInitialized = false;
+  m_hWnd = NULL;
+  m_bInitialized = false;
 }
 
 NPBool CPlugin::init(NPWindow* pNPWindow) {
-    if (pNPWindow == NULL)
-        return false;
+  if (pNPWindow == NULL)
+    return false;
 
-    if (pNPWindow->type == NPWindowTypeWindow) {
-      m_hWnd = (HWND)pNPWindow->window;
-      if (m_hWnd == NULL)
-        return false;
+  m_windowed = pNPWindow->type == NPWindowTypeWindow;
+  if (m_windowed) {
+    m_hWnd = (HWND)pNPWindow->window;
+    if (m_hWnd == NULL)
+      return false;
 
-      // subclass window so we can intercept window messages and do our drawing
-      // to it
-      lpOldProc = SubclassWindow(m_hWnd, (WNDPROC)PluginWinProc);
-      SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
+    // subclass window so we can intercept window messages and do our drawing
+    // to it
+    lpOldProc = SubclassWindow(m_hWnd, (WNDPROC)PluginWinProc);
+    SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
+#if 0
       CreateWindowExA(WS_EX_CLIENTEDGE, "EDIT", "hello, win32.",
                       WS_VISIBLE | WS_CHILD | WS_BORDER | ES_LEFT |
                           ES_MULTILINE | ES_AUTOVSCROLL,
                       10, 10, 200, 100, m_hWnd, NULL,
                       (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE), NULL);
-    } else {
-      m_hdc = (HDC)pNPWindow->window;
-      m_rc.left = pNPWindow->x;
-      m_rc.top = pNPWindow->y;
-      m_rc.right = pNPWindow->x + pNPWindow->width;
-      m_rc.bottom = pNPWindow->y + pNPWindow->height;
-    }
+#endif  // #if 0
+  } else {
+    m_hdc = (HDC)pNPWindow->window;
+    m_rc.left = pNPWindow->x;
+    m_rc.top = pNPWindow->y;
+    m_rc.right = pNPWindow->x + pNPWindow->width;
+    m_rc.bottom = pNPWindow->y + pNPWindow->height;
+  }
 
-//    HWND hBrowser = FindBrowserHWND(m_hWnd);
-//    AttachThreadInput(GetWindowThreadProcessId(m_hWnd, NULL), GetWindowThreadProcessId(hBrowser, NULL), TRUE);
+  //    HWND hBrowser = FindBrowserHWND(m_hWnd);
+  //    AttachThreadInput(GetWindowThreadProcessId(m_hWnd, NULL),
+  //    GetWindowThreadProcessId(hBrowser, NULL), TRUE);
 
-    m_Window = pNPWindow;
-    m_bInitialized = true;
-    return true;
+  m_Window = pNPWindow;
+  m_bInitialized = true;
+  return true;
 }
 
-void CPlugin::shut()
-{
-    SubclassWindow(m_hWnd, lpOldProc);
-    m_hWnd = NULL;
-    m_bInitialized = false;
+void CPlugin::shut() {
+  SubclassWindow(m_hWnd, lpOldProc);
+  m_hWnd = NULL;
+  m_bInitialized = false;
 }
 
 NPBool CPlugin::isInitialized() {
-    return m_bInitialized;
+  return m_bInitialized;
 }
 
 ScriptablePluginObject* CPlugin::GetScriptableObject() {
-    if (!m_pScriptableObject) {
-        m_pScriptableObject = (ScriptablePluginObject*)npnfuncs->createobject(m_pNPInstance, &plugin_ref_obj);
+  if (!m_pScriptableObject) {
+    m_pScriptableObject = (ScriptablePluginObject*)npnfuncs->createobject(
+        m_pNPInstance, &plugin_ref_obj);
 
-        // Retain the object since we keep it in plugin code
-        // so that it won't be freed by browser.
-        npnfuncs->retainobject((NPObject*)m_pScriptableObject);
-    }
+    // Retain the object since we keep it in plugin code
+    // so that it won't be freed by browser.
+    npnfuncs->retainobject((NPObject*)m_pScriptableObject);
+  }
 
-    return m_pScriptableObject;
+  return m_pScriptableObject;
 }
 
 HWND CPlugin::GetHWnd() {
-    return m_hWnd;
+  return m_hWnd;
 }
 
-HDC CPlugin::GetHDC(RECT* rc) {
-  *rc = m_rc;
-  return m_hdc;
+void CPlugin::Draw() {
+  DoPaint(m_hdc, &m_rc);
 }
 
-static LRESULT CALLBACK PluginWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg) {
-    case WM_PAINT:
-    {
-        // draw a frame and display the string
+void CPlugin::DoPaint(HDC hdc, RECT* rc) {
+  HBRUSH hbrush = CreateSolidBrush(RGB(0, 0, 255));
+  FillRect(hdc, rc, hbrush);
+  DeleteObject(hbrush);
+
+  RECT r = *rc;
+  r.left += 20;
+  r.top += 20;
+  r.right -= 20;
+  r.bottom -= 20;
+  FillRect(hdc, &r, (HBRUSH)(COLOR_WINDOW + 1));
+
+  SetTextColor(hdc, RGB(255, 0, 0));
+
+  std::string s =
+      m_windowed ? "a windowed np plugin." : "a windowless np plugin.";
+
+  DrawText(hdc, s.c_str(), s.size(), rc,
+           DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+}
+
+static LRESULT CALLBACK PluginWinProc(HWND hWnd,
+                                      UINT msg,
+                                      WPARAM wParam,
+                                      LPARAM lParam) {
+  switch (msg) {
+    case WM_PAINT: {
+      CPlugin* p = (CPlugin*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      if (p) {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
         RECT rc;
         GetClientRect(hWnd, &rc);
-        FillRect(hdc, &rc, (HBRUSH)(COLOR_WINDOW + 1));
-        FrameRect(hdc, &rc, GetStockBrush(BLACK_BRUSH));
-        CPlugin* p = (CPlugin*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-        if (p) {
-            char* s = "hello, np plugin win32";
-            DrawText(hdc, s, strlen(s), &rc, DT_SINGLELINE | DT_CENTER | DT_BOTTOM);
-        }
+
+        p->DoPaint(hdc, &rc);
 
         EndPaint(hWnd, &ps);
-    }
-    break;
-    default:
-        break;
-    }
+      }
 
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    } break;
+    default:
+      break;
+  }
+
+  return DefWindowProc(hWnd, msg, wParam, lParam);
 }
